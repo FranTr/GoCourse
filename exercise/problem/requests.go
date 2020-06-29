@@ -14,7 +14,7 @@ func main() {
 		"https://www.google.com",
 		"https://drive.google.com",
 		"https://maps.google.com",
-		"https://hangouts.goggle.com",
+		"https://hangouts.google.com",
 	}
 	for _, site := range sites {
 		wg.Add(1)
