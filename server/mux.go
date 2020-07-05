@@ -1,13 +1,12 @@
 package main
 
 import (
-	"github.com/pabloos/http/cache"
 	"net/http"
 )
 
-func newMux(c cache.Cache) http.Handler {
+func newMux() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", Debug(index))
-	mux.HandleFunc("/greet", Cached(c, POST(greetHandler)))
+	mux.HandleFunc("/greet", Cached(POST(greetHandler)))
 	return mux
 }

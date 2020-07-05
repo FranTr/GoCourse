@@ -45,7 +45,11 @@ func Delay(delay time.Duration, h http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func Cached(c cache.Cache, h http.HandlerFunc) http.HandlerFunc {
+func Cached(h http.HandlerFunc) http.HandlerFunc {
+	messages := make(map[string]greet.Greet)
+	c := cache.Cache{
+		Messages: messages,
+	}
 	return func(w http.ResponseWriter, r *http.Request) {
 		body, err := ioutil.ReadAll(r.Body)
 		if err != nil {
