@@ -1,7 +1,13 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"github.com/pabloos/http/cache"
+	"github.com/pabloos/http/greet"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"time"
@@ -36,5 +42,33 @@ func Delay(delay time.Duration, h http.HandlerFunc) http.HandlerFunc {
 		defer h.ServeHTTP(w, r)
 
 		time.Sleep(delay)
+	}
+}
+
+func Cached(c cache.Cache, h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		body, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			log.Printf("Error in body")
+			return
+		}
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		defer h.ServeHTTP(w, r)
+
+		var t greet.Greet
+		var gr greet.Greet
+		var found bool
+
+		json.NewDecoder(r.Body).Decode(&t)
+		r.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+		gr, found = c.Get(t)
+		if found {
+			fmt.Fprintf(w, "%s, from %s is in the cache\n", gr.Name, gr.Location)
+			fmt.Fprintf(w, "Actual Cache %s\n", c.GetMessages())
+		} else {
+			fmt.Fprintf(w, "%s, from %s not found in cache\n", t.Name, t.Location)
+			fmt.Fprintf(w, "Actual Cache %s\n", c.GetMessages())
+			c.Set(t)
+		}
 	}
 }
